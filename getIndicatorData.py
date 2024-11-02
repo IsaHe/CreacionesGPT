@@ -1,3 +1,5 @@
+from platform import system
+
 import anthropic
 import requests
 from key import API_KEY
@@ -32,16 +34,17 @@ else:
 
 nivel_analisis = input("Introduce el nivel de analisis que buscas (entidad, region o municipio): ")
 mensaje = "Te voy a dar una serie de entidades junto con su " + data["name"] + " por años en formato: 'nombre': años. Dame un analisis profundo de estos datos.\n"
+system = "Eres un experto analista de datos. Responde unicamente con tu analisis profundo de los datos."
 match nivel_analisis:
     case "entidad":
         entidades = {item["name"]: item["years"] for item in data["entities"]}
-        response = askCloude(client, "Eres un experto analista de datos. Responde unicamente con tu analisis profundo de los datos.", mensaje + f"Entidades: {entidades}")
+        response = askCloude(client, system, mensaje + f"Entidades: {entidades}")
     case "region":
         regiones = {item["name"]: item["years"] for item in data["regions"]}
-        response = askCloude(client, "Eres un experto analista de datos. Responde unicamente con tu analisis profundo de los datos.", mensaje + f"Regiones: {regiones}")
+        response = askCloude(client, system, mensaje + f"Regiones: {regiones}")
     case "municipio":
         municipios = {item["name"]: item["years"] for item in data["municipalities"]}
-        response = askCloude(client, "Eres un experto analista de datos. Responde unicamente con tu analisis profundo de los datos.", mensaje + f"Municipios: {municipios}")
+        response = askCloude(client, system, mensaje + f"Municipios: {municipios}")
 
 response_content = response[0].text
 print(response_content)
