@@ -1,4 +1,6 @@
 import threading
+from time import sleep
+
 from recibirCorreo import monitor_inbox
 import json
 from procesarCorreo import getResponse, send_email
@@ -12,6 +14,7 @@ if __name__ == '__main__':
     start_monitoring_thread()
     # Mantén el programa principal corriendo
     last_message_id = None
+    sleep(5)  # Espera 5 segundos para asegurarse de que el hilo de monitoreo haya comenzado
     while True:
         try:
             with open("message.json", "r") as message_file:
