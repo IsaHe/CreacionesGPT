@@ -7,9 +7,10 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+import json
 
 # Define el alcance de Gmail
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.send']
 CREDENTIALS_FILE = 'credentials.json'
 TOKEN_FILE = 'token.json'
 
@@ -43,15 +44,36 @@ def list_messages(service, user_id='me'):
         print(f'Ocurrió un error al listar mensajes: {error}')
         return []
 
+import re
+
 def get_message(service, user_id, msg_id):
     """Obtiene el contenido de un mensaje específico por ID."""
     try:
         message = service.users().messages().get(userId=user_id, id=msg_id, format='full').execute()
+        headers = message['payload']['headers']
+        subject = next(header['value'] for header in headers if header['name'] == 'Subject')
+        sender = next(header['value'] for header in headers if header['name'] == 'From')
+
+        # Extraer solo la dirección de correo del remitente
+        email_match = re.search(r'<(.+?)>', sender)
+        email = email_match.group(1) if email_match else sender
+
+        body = ""
         for part in message['payload']['parts']:
             if part['mimeType'] == 'text/plain':
                 data = part['body']['data']
                 decoded_data = base64.urlsafe_b64decode(data).decode('utf-8')
-                print(f'Mensaje: {decoded_data}')
+                body = decoded_data
+                break
+
+        message_data = {
+            'id': msg_id,
+            'subject': subject,
+            'from': email,
+            'body': body,
+        }
+        with open('message.json', 'w') as file:
+            file.write(json.dumps(message_data, indent=4, ensure_ascii=False))
     except HttpError as error:
         print(f'Ocurrió un error al obtener el mensaje: {error}')
 

@@ -1,6 +1,6 @@
 import anthropic
 
-def askCloude(client, system, message):
+def askCloude(client, system, prompt):
     message = client.messages.create(
         model="claude-3-haiku-20240307",
         max_tokens=1000,
@@ -12,7 +12,7 @@ def askCloude(client, system, message):
                 "content": [
                     {
                         "type": "text",
-                        "text": message
+                        "text": prompt
                     }
                 ]
             }
