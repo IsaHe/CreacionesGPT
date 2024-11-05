@@ -9,7 +9,6 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import json
 
-# Define el alcance de Gmail
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.send']
 CREDENTIALS_FILE = 'credentials.json'
 TOKEN_FILE = 'token.json'
@@ -54,7 +53,6 @@ def get_message(service, user_id, msg_id):
         subject = next(header['value'] for header in headers if header['name'] == 'Subject')
         sender = next(header['value'] for header in headers if header['name'] == 'From')
 
-        # Extraer solo la dirección de correo del remitente
         email_match = re.search(r'<(.+?)>', sender)
         email = email_match.group(1) if email_match else sender
 
@@ -78,7 +76,6 @@ def get_message(service, user_id, msg_id):
         print(f'Ocurrió un error al obtener el mensaje: {error}')
 
 def monitor_inbox():
-    # Autentica y construye el servicio de Gmail
     service = gmail_authenticate()
     if service is None:
         print("No se pudo autenticar.")
@@ -86,26 +83,21 @@ def monitor_inbox():
 
     last_seen_id = None
 
-    # Bucle infinito para revisar nuevos correos periódicamente
     while True:
         print("Revisando nuevos mensajes...")
-        # Lista los mensajes en la bandeja de entrada
         messages = list_messages(service)
         if not messages:
             print("No se encontraron mensajes.")
         else:
-            # Obtiene el ID del mensaje más reciente
             latest_message_id = messages[0]['id']
             print(f"ID del mensaje más reciente: {latest_message_id}")
 
-            # Verifica si hay un mensaje nuevo
             if latest_message_id != last_seen_id:
                 print(f"Nuevo mensaje encontrado: ID {latest_message_id}")
                 get_message(service, 'me', latest_message_id)
-                last_seen_id = latest_message_id  # Actualiza el último ID visto
+                last_seen_id = latest_message_id
             else:
                 print("No hay mensajes nuevos.")
 
-        # Espera antes de revisar nuevamente (ej. 60 segundos)
         print("Esperando 60 segundos antes de la próxima revisión...")
         time.sleep(60)
